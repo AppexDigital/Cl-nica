@@ -1,0 +1,5 @@
+# Ignorar la carpeta de dependencias descargadas
+node_modules/
+
+# Ignorar archivos de variables de entorno locales (opcional pero buena práctica)
+.env
