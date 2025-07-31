@@ -1,0 +1,8 @@
+# Ignorar la carpeta de dependencias descargadas
+node_modules
+
+# Ignorar cualquier archivo de credenciales de Google
+*.json
+
+# Ignorar archivos de variables de entorno locales
+.env
