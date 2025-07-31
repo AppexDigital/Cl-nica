@@ -206,12 +206,24 @@
                     <p class="text-slate-500 mb-8">Análisis de métricas clave y rendimiento por profesional.</p>
                     <div class="space-y-8">
                         <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
-                            <label for="reporte-doctor-select" class="form-label">Análisis por Profesional</label>
-                            <select id="reporte-doctor-select" class="w-full md:w-1/2 form-input mt-1">
-                                <option value="">-- Todos los doctores --</option>
-                            </select>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                                <div>
+                                    <label for="reporte-doctor-select" class="form-label">Análisis por Profesional</label>
+                                    <select id="reporte-doctor-select" class="w-full form-input mt-1">
+                                        <option value="">-- Todos los doctores --</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button id="prev-month-btn" class="p-2.5 rounded-md bg-slate-200 hover:bg-slate-300 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                    <select id="report-month-select" class="form-input flex-grow"></select>
+                                    <select id="report-year-select" class="form-input flex-grow"></select>
+                                    <button id="next-month-btn" class="p-2.5 rounded-md bg-slate-200 hover:bg-slate-300 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                    <button id="view-annual-btn" class="btn-secondary whitespace-nowrap">Ver Año</button>
+                                </div>
+                            </div>
                         </div>
                         <div id="report-results" class="hidden">
+                             <h3 id="report-period-title" class="text-xl font-bold text-slate-700 mb-6"></h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                                 <div class="stat-card"><div class="stat-icon bg-blue-100 text-blue-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div><div><h4 class="stat-title">Citas Facturadas</h4><p id="report-total-citas" class="stat-value">0</p></div></div>
                                 <div class="stat-card"><div class="stat-icon bg-green-100 text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div><div><h4 class="stat-title">Ingresos Generados</h4><p id="report-total-vendido" class="stat-value">₡0</p></div></div>
@@ -310,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let doctores = [];
     let citas = [];
     let commissionChartInstance = null;
+    let currentReportDate = new Date();
     const consejos = [
         "Verifica dos veces la información de contacto para asegurar recordatorios efectivos.",
         "Usa la sección de notas para registrar alergias o condiciones importantes del paciente.",
@@ -359,6 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportTotalComisiones = document.getElementById('report-total-comisiones');
     const reportAvgComision = document.getElementById('report-avg-comision');
     const reportTableBody = document.getElementById('report-table-body');
+    const reportMonthSelect = document.getElementById('report-month-select');
+    const reportYearSelect = document.getElementById('report-year-select');
+    const prevMonthBtn = document.getElementById('prev-month-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
+    const viewAnnualBtn = document.getElementById('view-annual-btn');
+    const reportPeriodTitle = document.getElementById('report-period-title');
 
     // ===================================================================================
     // LÓGICA DE LA APLICACIÓN
@@ -368,8 +387,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function cargarDatosIniciales() {
         try {
             const response = await fetch('/.netlify/functions/get-data');
-            if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
+            if (!response.ok) {
+                // Si la respuesta no es OK, lanzamos un error para que sea capturado por el catch
+                throw new Error(`Error de red: ${response.statusText}`);
+            }
             const data = await response.json();
+
+            // Verificación de que los datos existen antes de mapearlos
+            if (!data.servicios || !data.doctores || !data.citas) {
+                throw new Error("La estructura de datos recibida del servidor es incorrecta.");
+            }
             
             servicios = data.servicios.map(s => ({ ...s, precio: parseFloat(s.precio) }));
             doctores = data.doctores.map(d => ({ ...d, comision: parseFloat(d.comision) }));
@@ -487,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
     formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Validación de Formulario
         let isValid = true;
         const requiredFields = formRegistro.querySelectorAll('[required]');
         requiredFields.forEach(field => {
@@ -510,7 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const servicio = servicios.find(s => s.nombre === servicioNombre);
         const doctor = doctores.find(d => d.nombre === doctorNombre);
 
-        const newCita = { id: `cita-${Date.now()}`, fecha: document.getElementById('cita-fecha').value, nombrePaciente: document.getElementById('paciente-nombre').value, cedulaPaciente: document.getElementById('paciente-cedula').value, telefonoPaciente: document.getElementById('paciente-telefono').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: servicio.precio * doctor.comision, estado: 'Agendada', notas: document.getElementById('cita-notas').value };
+        // CORRECCIÓN: Calcular comisión como porcentaje
+        const comisionCalculada = servicio.precio * (doctor.comision / 100);
+
+        const newCita = { id: `cita-${Date.now()}`, fecha: document.getElementById('cita-fecha').value, nombrePaciente: document.getElementById('paciente-nombre').value, cedulaPaciente: document.getElementById('paciente-cedula').value, telefonoPaciente: document.getElementById('paciente-telefono').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: comisionCalculada, estado: 'Agendada', notas: document.getElementById('cita-notas').value };
         try {
             const response = await fetch('/.netlify/functions/add-cita', { method: 'POST', body: JSON.stringify(newCita) });
             if (!response.ok) throw new Error('Error al guardar en el servidor.');
@@ -528,7 +557,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Remover clase de error al escribir
     formRegistro.querySelectorAll('[required]').forEach(field => {
         field.addEventListener('input', () => field.classList.remove('error'));
     });
@@ -607,7 +635,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const doctorNombre = document.getElementById('edit-doctor-select').value;
         const servicio = servicios.find(s => s.nombre === servicioNombre);
         const doctor = doctores.find(d => d.nombre === doctorNombre);
-        const updatedCita = { ...citas[citaIndex], nombrePaciente: document.getElementById('edit-paciente-nombre').value, cedulaPaciente: document.getElementById('edit-paciente-cedula').value, telefonoPaciente: document.getElementById('edit-paciente-telefono').value, fecha: document.getElementById('edit-cita-fecha').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: servicio.precio * doctor.comision, estado: document.getElementById('edit-cita-estado').value, notas: document.getElementById('edit-cita-notas').value };
+        
+        // CORRECCIÓN: Calcular comisión como porcentaje
+        const comisionCalculada = servicio.precio * (doctor.comision / 100);
+
+        const updatedCita = { ...citas[citaIndex], nombrePaciente: document.getElementById('edit-paciente-nombre').value, cedulaPaciente: document.getElementById('edit-paciente-cedula').value, telefonoPaciente: document.getElementById('edit-paciente-telefono').value, fecha: document.getElementById('edit-cita-fecha').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: comisionCalculada, estado: document.getElementById('edit-cita-estado').value, notas: document.getElementById('edit-cita-notas').value };
         const success = await updateCitaInBackend(updatedCita);
         if (success) {
             citas[citaIndex] = updatedCita;
@@ -622,31 +654,91 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Lógica de Reportes ---
-    reporteDoctorSelect.addEventListener('change', () => {
+    function setupDateControls() {
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        reportMonthSelect.innerHTML = monthNames.map((month, index) => `<option value="${index}">${month}</option>`).join('');
+        
+        const years = [...new Set(citas.map(c => new Date(c.fecha).getFullYear()))].sort((a,b) => b - a);
+        const currentYear = new Date().getFullYear();
+        if (!years.includes(currentYear)) {
+            years.unshift(currentYear);
+        }
+        reportYearSelect.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
+
+        updateDateSelection();
+    }
+
+    function updateDateSelection() {
+        reportMonthSelect.value = currentReportDate.getMonth();
+        reportYearSelect.value = currentReportDate.getFullYear();
+        displayReport();
+    }
+    
+    prevMonthBtn.addEventListener('click', () => {
+        currentReportDate.setMonth(currentReportDate.getMonth() - 1);
+        updateDateSelection();
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+        currentReportDate.setMonth(currentReportDate.getMonth() + 1);
+        updateDateSelection();
+    });
+
+    viewAnnualBtn.addEventListener('click', () => {
+        reportMonthSelect.value = "all";
+        displayReport();
+    });
+
+    [reporteDoctorSelect, reportMonthSelect, reportYearSelect].forEach(el => {
+        el.addEventListener('change', displayReport);
+    });
+
+    function displayReport() {
         const selectedDoctor = reporteDoctorSelect.value;
+        const selectedMonth = reportMonthSelect.value;
+        const selectedYear = parseInt(reportYearSelect.value);
+
         if (!selectedDoctor) {
             reportResults.classList.add('hidden');
             return;
         }
-        const citasDoctor = citas.filter(c => c.doctor === selectedDoctor && (c.estado === 'Completada' || c.estado === 'Facturada'));
-        const totalVendido = citasDoctor.reduce((sum, cita) => sum + cita.precio, 0);
-        const totalComisiones = citasDoctor.reduce((sum, cita) => sum + cita.comision, 0);
-        const totalCitasCompletadas = citasDoctor.length;
+
+        let filteredCitas = citas.filter(c => c.doctor === selectedDoctor && (c.estado === 'Completada' || c.estado === 'Facturada'));
+
+        if (selectedMonth === "all") {
+            filteredCitas = filteredCitas.filter(c => new Date(c.fecha).getFullYear() === selectedYear);
+            reportPeriodTitle.textContent = `Resumen Anual para ${selectedYear}`;
+        } else {
+            const month = parseInt(selectedMonth);
+            filteredCitas = filteredCitas.filter(c => {
+                const citaDate = new Date(c.fecha);
+                return citaDate.getFullYear() === selectedYear && citaDate.getMonth() === month;
+            });
+            const monthName = reportMonthSelect.options[reportMonthSelect.selectedIndex].text;
+            reportPeriodTitle.textContent = `Reporte de ${monthName} de ${selectedYear}`;
+        }
+        
+        const totalVendido = filteredCitas.reduce((sum, cita) => sum + cita.precio, 0);
+        const totalComisiones = filteredCitas.reduce((sum, cita) => sum + cita.comision, 0);
+        const totalCitasCompletadas = filteredCitas.length;
         const avgComision = totalCitasCompletadas > 0 ? totalComisiones / totalCitasCompletadas : 0;
         const formatCurrency = (value) => `₡${value.toLocaleString('es-CR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        
         reportTotalCitas.textContent = totalCitasCompletadas;
         reportTotalVendido.textContent = formatCurrency(totalVendido);
         reportTotalComisiones.textContent = formatCurrency(totalComisiones);
         reportAvgComision.textContent = formatCurrency(avgComision);
+        
         reportTableBody.innerHTML = '';
-        if (citasDoctor.length > 0) {
-            citasDoctor.forEach(cita => {
+        if (filteredCitas.length > 0) {
+            filteredCitas.forEach(cita => {
                 reportTableBody.innerHTML += `<tr class="border-b border-slate-100 last:border-b-0"><td class="px-4 py-3">${cita.fecha}</td><td class="px-4 py-3 font-medium text-slate-700">${cita.nombrePaciente}</td><td class="px-4 py-3 text-right font-semibold text-emerald-600">${formatCurrency(cita.comision)}</td></tr>`;
             });
         } else {
-            reportTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-slate-400">No hay citas facturadas para este doctor.</td></tr>`;
+            reportTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-slate-400">No hay citas facturadas para este periodo.</td></tr>`;
         }
-        const comisionesPorServicio = citasDoctor.reduce((acc, cita) => {
+        
+        const comisionesPorServicio = filteredCitas.reduce((acc, cita) => {
             acc[cita.servicio] = (acc[cita.servicio] || 0) + cita.comision;
             return acc;
         }, {});
@@ -661,13 +753,14 @@ document.addEventListener('DOMContentLoaded', () => {
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => `${c.label}: ${formatCurrency(c.parsed)}` } } } }
         });
         reportResults.classList.remove('hidden');
-    });
+    }
 
     // --- Inicialización de la Aplicación ---
     function initializeApplication() {
         populateSelects();
         renderCitas();
         setupBrandingPanel();
+        setupDateControls();
         switchView('registrar');
     }
 
