@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Citas - Clínica Dental</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link.active, .sidebar-link:hover {
+            background-color: #e0f2fe; /* light-blue-100 */
+            color: #0c4a6e; /* light-blue-900 */
+            font-weight: 600;
+        }
+        /* Ocultar flechas en input number */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar de Navegación -->
+        <aside class="w-64 bg-white shadow-md flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-cyan-700">Dental<span class="font-light">Manager</span></h1>
+                <p class="text-sm text-gray-500">Clínica Sonrisas</p>
+            </div>
+            <nav class="mt-6">
+                <a href="#" id="nav-registrar" class="sidebar-link active flex items-center py-3 px-6">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Registrar Cita
+                </a>
+                <a href="#" id="nav-consultar" class="sidebar-link flex items-center py-3 px-6">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Consultar Citas
+                </a>
+                <a href="#" id="nav-reportes" class="sidebar-link flex items-center py-3 px-6">
+                     <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Reporte Doctores
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            
+            <!-- Vista: Registrar Cita -->
+            <div id="view-registrar">
+                <h2 class="text-3xl font-bold mb-6">Registrar Nueva Cita</h2>
+                <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl">
+                    <form id="form-registro">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Datos del Paciente -->
+                            <div class="md:col-span-2">
+                                <h3 class="text-lg font-semibold border-b pb-2 mb-4">Datos del Paciente</h3>
+                            </div>
+                            <div>
+                                <label for="paciente-nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                                <input type="text" id="paciente-nombre" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+                            <div>
+                                <label for="paciente-cedula" class="block text-sm font-medium text-gray-700">Cédula</label>
+                                <input type="text" id="paciente-cedula" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+                             <div>
+                                <label for="paciente-telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                <input type="tel" id="paciente-telefono" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+                             <div>
+                                <label for="cita-fecha" class="block text-sm font-medium text-gray-700">Fecha de la Cita</label>
+                                <input type="date" id="cita-fecha" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                            </div>
+
+                            <!-- Detalles del Servicio -->
+                            <div class="md:col-span-2 mt-4">
+                                <h3 class="text-lg font-semibold border-b pb-2 mb-4">Detalles del Servicio</h3>
+                            </div>
+                            <div>
+                                <label for="servicio-select" class="block text-sm font-medium text-gray-700">Servicio</label>
+                                <select id="servicio-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                                    <option value="">-- Seleccione un servicio --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="servicio-precio" class="block text-sm font-medium text-gray-700">Precio (₡)</label>
+                                <input type="text" id="servicio-precio" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="doctor-select" class="block text-sm font-medium text-gray-700">Doctor</label>
+                                <select id="doctor-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                                    <option value="">-- Seleccione un doctor --</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="cita-notas" class="block text-sm font-medium text-gray-700">Notas Adicionales</label>
+                                <textarea id="cita-notas" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-8 text-right">
+                            <button type="submit" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors">Guardar Cita</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Vista: Consultar Citas -->
+            <div id="view-consultar" class="hidden">
+                <h2 class="text-3xl font-bold mb-6">Consulta de Citas</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="mb-4">
+                        <label for="search-input" class="sr-only">Buscar</label>
+                        <input type="text" id="search-input" placeholder="Buscar por nombre de paciente..." class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Fecha</th>
+                                    <th scope="col" class="px-6 py-3">Paciente</th>
+                                    <th scope="col" class="px-6 py-3">Servicio</th>
+                                    <th scope="col" class="px-6 py-3">Doctor</th>
+                                    <th scope="col" class="px-6 py-3 text-right">Precio</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Estado</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="citas-table-body">
+                                <!-- Las filas se insertarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista: Reporte Doctores -->
+            <div id="view-reportes" class="hidden">
+                <h2 class="text-3xl font-bold mb-6">Reporte de Comisiones por Doctor</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+                    <div class="mb-6">
+                        <label for="reporte-doctor-select" class="block text-sm font-medium text-gray-700 mb-2">Seleccione un Doctor para generar el reporte</label>
+                        <select id="reporte-doctor-select" class="w-full md:w-1/2 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                             <option value="">-- Todos los doctores --</option>
+                        </select>
+                    </div>
+                    
+                    <div id="report-results" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <h4 class="text-sm font-medium text-gray-500 uppercase">Total Vendido</h4>
+                                <p id="report-total-vendido" class="text-3xl font-bold text-gray-800 mt-1">₡0</p>
+                            </div>
+                             <div class="bg-green-50 p-6 rounded-lg text-center">
+                                <h4 class="text-sm font-medium text-green-600 uppercase">Total Comisiones</h4>
+                                <p id="report-total-comisiones" class="text-3xl font-bold text-green-800 mt-1">₡0</p>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4">Detalle de Citas Completadas</h3>
+                        <div class="overflow-x-auto border rounded-lg">
+                            <table class="w-full text-sm text-left text-gray-500">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3">Fecha</th>
+                                        <th class="px-6 py-3">Paciente</th>
+                                        <th class="px-6 py-3">Servicio</th>
+                                        <th class="px-6 py-3 text-right">Precio</th>
+                                        <th class="px-6 py-3 text-right">Comisión</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-table-body">
+                                    <!-- Filas del reporte -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal para Editar Cita -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-2xl">
+            <h2 class="text-2xl font-bold mb-6">Editar Cita</h2>
+            <form id="form-edit">
+                <input type="hidden" id="edit-cita-id">
+                <!-- Contenido del formulario duplicado para la edición -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                        <label for="edit-paciente-nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                        <input type="text" id="edit-paciente-nombre" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                    </div>
+                    <div>
+                        <label for="edit-paciente-cedula" class="block text-sm font-medium text-gray-700">Cédula</label>
+                        <input type="text" id="edit-paciente-cedula" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                    </div>
+                    <div>
+                        <label for="edit-paciente-telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="tel" id="edit-paciente-telefono" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                    </div>
+                    <div>
+                        <label for="edit-cita-fecha" class="block text-sm font-medium text-gray-700">Fecha de la Cita</label>
+                        <input type="date" id="edit-cita-fecha" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                    </div>
+                    <div>
+                        <label for="edit-servicio-select" class="block text-sm font-medium text-gray-700">Servicio</oabel>
+                        <select id="edit-servicio-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select>
+                    </div>
+                    <div>
+                        <label for="edit-servicio-precio" class="block text-sm font-medium text-gray-700">Precio (₡)</label>
+                        <input type="text" id="edit-servicio-precio" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="edit-doctor-select" class="block text-sm font-medium text-gray-700">Doctor</label>
+                        <select id="edit-doctor-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select>
+                    </div>
+                     <div class="md:col-span-2">
+                        <label for="edit-cita-estado" class="block text-sm font-medium text-gray-700">Estado</label>
+                        <select id="edit-cita-estado" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
+                            <option value="Agendada">Agendada</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Cancelada">Cancelada</option>
+                            <option value="Facturada">Facturada</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="edit-cita-notas" class="block text-sm font-medium text-gray-700">Notas Adicionales</label>
+                        <textarea id="edit-cita-notas" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></textarea>
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end gap-4">
+                    <button type="button" id="cancel-edit" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+                    <button type="submit" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenedor de Notificaciones -->
+    <div id="notification-container" class="fixed bottom-5 right-5 z-50"></div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ===================================================================================
+    // MOCK DATA: Simulación de la base de datos de Google Sheets.
+    // En una aplicación real, estos datos vendrían de llamadas a la API (fetch).
+    // ===================================================================================
+    const servicios = [
+        { nombre: 'Limpieza Dental', precio: 25000 },
+        { nombre: 'Blanqueamiento Dental', precio: 150000 },
+        { nombre: 'Calza (Resina)', precio: 40000 },
+        { nombre: 'Extracción Simple', precio: 35000 },
+        { nombre: 'Tratamiento de Nervio', precio: 200000 },
+        { nombre: 'Corona de Porcelana', precio: 250000 }
+    ];
+
+    const doctores = [
+        { nombre: 'Dr. Carlos Rojas', especialidad: 'General', comision: 0.20 },
+        { nombre: 'Dra. Ana Fuentes', especialidad: 'Ortodoncia', comision: 0.25 },
+        { nombre: 'Dr. Luis Jiménez', especialidad: 'Endodoncia', comision: 0.30 }
+    ];
+
+    let citas = [
+        { id: 'cita-1689798451', fecha: '2025-08-15', nombrePaciente: 'Elena Vargas', cedulaPaciente: '1-1234-5678', telefonoPaciente: '8888-7777', servicio: 'Limpieza Dental', precio: 25000, doctor: 'Dr. Carlos Rojas', comision: 5000, estado: 'Completada', notas: 'Paciente refiere sensibilidad.' },
+        { id: 'cita-1689798452', fecha: '2025-08-16', nombrePaciente: 'Marco Solís', cedulaPaciente: '2-0987-6543', telefonoPaciente: '8765-4321', servicio: 'Blanqueamiento Dental', precio: 150000, doctor: 'Dra. Ana Fuentes', comision: 37500, estado: 'Facturada', notas: '' },
+        { id: 'cita-1689798453', fecha: '2025-08-20', nombrePaciente: 'Sofía Castro', cedulaPaciente: '9-0123-4567', telefonoPaciente: '8901-2345', servicio: 'Calza (Resina)', precio: 40000, doctor: 'Dr. Carlos Rojas', comision: 8000, estado: 'Agendada', notas: 'Muela inferior derecha.' }
+    ];
+
+    // ===================================================================================
+    // REFERENCIAS AL DOM
+    // ===================================================================================
+    const navLinks = {
+        registrar: document.getElementById('nav-registrar'),
+        consultar: document.getElementById('nav-consultar'),
+        reportes: document.getElementById('nav-reportes'),
+    };
+    const views = {
+        registrar: document.getElementById('view-registrar'),
+        consultar: document.getElementById('view-consultar'),
+        reportes: document.getElementById('view-reportes'),
+    };
+    const formRegistro = document.getElementById('form-registro');
+    const servicioSelect = document.getElementById('servicio-select');
+    const servicioPrecioInput = document.getElementById('servicio-precio');
+    const doctorSelect = document.getElementById('doctor-select');
+    const citasTableBody = document.getElementById('citas-table-body');
+    const searchInput = document.getElementById('search-input');
+    
+    // Elementos del Modal
+    const editModal = document.getElementById('edit-modal');
+    const formEdit = document.getElementById('form-edit');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+    const editCitaId = document.getElementById('edit-cita-id');
+    const editServicioSelect = document.getElementById('edit-servicio-select');
+    const editDoctorSelect = document.getElementById('edit-doctor-select');
+    const editServicioPrecio = document.getElementById('edit-servicio-precio');
+
+    // Elementos de Reportes
+    const reporteDoctorSelect = document.getElementById('reporte-doctor-select');
+    const reportResults = document.getElementById('report-results');
+    const reportTotalVendido = document.getElementById('report-total-vendido');
+    const reportTotalComisiones = document.getElementById('report-total-comisiones');
+    const reportTableBody = document.getElementById('report-table-body');
+
+    // ===================================================================================
+    // LÓGICA DE LA APLICACIÓN
+    // ===================================================================================
+
+    // --- Lógica de Navegación ---
+    function switchView(viewName) {
+        Object.values(views).forEach(view => view.classList.add('hidden'));
+        Object.values(navLinks).forEach(link => link.classList.remove('active'));
+        views[viewName].classList.remove('hidden');
+        navLinks[viewName].classList.add('active');
+    }
+
+    Object.entries(navLinks).forEach(([name, link]) => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView(name);
+        });
+    });
+
+    // --- Lógica de Notificaciones ---
+    function showNotification(message, isError = false) {
+        const container = document.getElementById('notification-container');
+        const notif = document.createElement('div');
+        notif.className = `px-4 py-3 rounded-md shadow-lg text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+        notif.textContent = message;
+        container.appendChild(notif);
+        setTimeout(() => {
+            notif.style.transition = 'opacity 0.5s';
+            notif.style.opacity = '0';
+            setTimeout(() => notif.remove(), 500);
+        }, 3000);
+    }
+
+    // --- Lógica de Formularios y Datos ---
+    function populateSelects() {
+        // Llenar selects de servicios
+        servicios.forEach(s => {
+            servicioSelect.innerHTML += `<option value="${s.nombre}">${s.nombre}</option>`;
+            editServicioSelect.innerHTML += `<option value="${s.nombre}">${s.nombre}</option>`;
+        });
+
+        // Llenar selects de doctores
+        doctores.forEach(d => {
+            doctorSelect.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+            editDoctorSelect.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+            reporteDoctorSelect.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
+        });
+    }
+
+    function updatePrice(selectElement, priceElement) {
+        const selectedService = servicios.find(s => s.nombre === selectElement.value);
+        priceElement.value = selectedService ? selectedService.precio.toLocaleString('es-CR') : '';
+    }
+
+    function renderCitasTable(citasToShow = citas) {
+        citasTableBody.innerHTML = '';
+        if (citasToShow.length === 0) {
+            citasTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-6">No se encontraron citas.</td></tr>`;
+            return;
+        }
+        citasToShow.forEach(cita => {
+            const estadoClass = {
+                'Agendada': 'bg-blue-100 text-blue-800',
+                'Completada': 'bg-yellow-100 text-yellow-800',
+                'Cancelada': 'bg-red-100 text-red-800',
+                'Facturada': 'bg-green-100 text-green-800'
+            }[cita.estado] || 'bg-gray-100 text-gray-800';
+
+            const row = `
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">${cita.fecha}</td>
+                    <td class="px-6 py-4 font-medium text-gray-900">${cita.nombrePaciente}</td>
+                    <td class="px-6 py-4">${cita.servicio}</td>
+                    <td class="px-6 py-4">${cita.doctor}</td>
+                    <td class="px-6 py-4 text-right">₡${cita.precio.toLocaleString('es-CR')}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${estadoClass}">${cita.estado}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button data-id="${cita.id}" class="edit-btn font-medium text-cyan-600 hover:underline mr-3">Editar</button>
+                        ${cita.estado === 'Completada' ? `<button data-id="${cita.id}" class="invoice-btn font-medium text-green-600 hover:underline">Facturar</button>` : ''}
+                    </td>
+                </tr>
+            `;
+            citasTableBody.innerHTML += row;
+        });
+    }
+
+    // --- Lógica de Eventos ---
+    servicioSelect.addEventListener('change', () => updatePrice(servicioSelect, servicioPrecioInput));
+    editServicioSelect.addEventListener('change', () => updatePrice(editServicioSelect, editServicioPrecio));
+
+    formRegistro.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const servicioNombre = servicioSelect.value;
+        const doctorNombre = doctorSelect.value;
+        const servicio = servicios.find(s => s.nombre === servicioNombre);
+        const doctor = doctores.find(d => d.nombre === doctorNombre);
+
+        if (!servicio || !doctor) {
+            showNotification('Servicio o doctor no válido.', true);
+            return;
+        }
+
+        const newCita = {
+            id: `cita-${Date.now()}`,
+            fecha: document.getElementById('cita-fecha').value,
+            nombrePaciente: document.getElementById('paciente-nombre').value,
+            cedulaPaciente: document.getElementById('paciente-cedula').value,
+            telefonoPaciente: document.getElementById('paciente-telefono').value,
+            servicio: servicio.nombre,
+            precio: servicio.precio,
+            doctor: doctor.nombre,
+            comision: servicio.precio * doctor.comision,
+            estado: 'Agendada',
+            notas: document.getElementById('cita-notas').value
+        };
+        
+        // En una aplicación real, aquí harías un fetch a tu API para guardar en Google Sheets.
+        // await fetch('/.netlify/functions/add-cita', { method: 'POST', body: JSON.stringify(newCita) });
+        citas.push(newCita);
+        
+        renderCitasTable();
+        formRegistro.reset();
+        servicioPrecioInput.value = '';
+        showNotification('Cita registrada con éxito.');
+        switchView('consultar');
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredCitas = citas.filter(c => c.nombrePaciente.toLowerCase().includes(searchTerm));
+        renderCitasTable(filteredCitas);
+    });
+
+    citasTableBody.addEventListener('click', (e) => {
+        const target = e.target;
+        const citaId = target.dataset.id;
+        if (!citaId) return;
+
+        if (target.classList.contains('edit-btn')) {
+            const cita = citas.find(c => c.id === citaId);
+            if (cita) {
+                editCitaId.value = cita.id;
+                document.getElementById('edit-paciente-nombre').value = cita.nombrePaciente;
+                document.getElementById('edit-paciente-cedula').value = cita.cedulaPaciente;
+                document.getElementById('edit-paciente-telefono').value = cita.telefonoPaciente;
+                document.getElementById('edit-cita-fecha').value = cita.fecha;
+                document.getElementById('edit-servicio-select').value = cita.servicio;
+                document.getElementById('edit-servicio-precio').value = cita.precio.toLocaleString('es-CR');
+                document.getElementById('edit-doctor-select').value = cita.doctor;
+                document.getElementById('edit-cita-estado').value = cita.estado;
+                document.getElementById('edit-cita-notas').value = cita.notas;
+                editModal.classList.remove('hidden');
+            }
+        }
+
+        if (target.classList.contains('invoice-btn')) {
+            const citaIndex = citas.findIndex(c => c.id === citaId);
+            if (citaIndex !== -1) {
+                citas[citaIndex].estado = 'Facturada';
+                // En una aplicación real, aquí harías un fetch para actualizar el estado.
+                // await fetch(`/.netlify/functions/update-cita-status/${citaId}`, { method: 'PUT', body: JSON.stringify({ estado: 'Facturada' }) });
+                renderCitasTable();
+                showNotification('Cita marcada como Facturada.');
+            }
+        }
+    });
+
+    cancelEditBtn.addEventListener('click', () => {
+        editModal.classList.add('hidden');
+    });
+
+    formEdit.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const citaId = editCitaId.value;
+        const citaIndex = citas.findIndex(c => c.id === citaId);
+        if (citaIndex === -1) {
+            showNotification('Error: no se encontró la cita.', true);
+            return;
+        }
+
+        const servicioNombre = document.getElementById('edit-servicio-select').value;
+        const doctorNombre = document.getElementById('edit-doctor-select').value;
+        const servicio = servicios.find(s => s.nombre === servicioNombre);
+        const doctor = doctores.find(d => d.nombre === doctorNombre);
+
+        const updatedCita = {
+            ...citas[citaIndex],
+            nombrePaciente: document.getElementById('edit-paciente-nombre').value,
+            cedulaPaciente: document.getElementById('edit-paciente-cedula').value,
+            telefonoPaciente: document.getElementById('edit-paciente-telefono').value,
+            fecha: document.getElementById('edit-cita-fecha').value,
+            servicio: servicio.nombre,
+            precio: servicio.precio,
+            doctor: doctor.nombre,
+            comision: servicio.precio * doctor.comision,
+            estado: document.getElementById('edit-cita-estado').value,
+            notas: document.getElementById('edit-cita-notas').value,
+        };
+
+        // En una aplicación real, aquí harías un fetch para actualizar la cita completa.
+        // await fetch(`/.netlify/functions/update-cita/${citaId}`, { method: 'PUT', body: JSON.stringify(updatedCita) });
+        citas[citaIndex] = updatedCita;
+
+        renderCitasTable();
+        editModal.classList.add('hidden');
+        showNotification('Cita actualizada con éxito.');
+    });
+
+    // --- Lógica de Reportes ---
+    reporteDoctorSelect.addEventListener('change', () => {
+        const selectedDoctor = reporteDoctorSelect.value;
+        if (!selectedDoctor) {
+            reportResults.classList.add('hidden');
+            return;
+        }
+
+        const citasDoctor = citas.filter(c => c.doctor === selectedDoctor && c.estado === 'Completada' || c.estado === 'Facturada');
+        
+        const totalVendido = citasDoctor.reduce((sum, cita) => sum + cita.precio, 0);
+        const totalComisiones = citasDoctor.reduce((sum, cita) => sum + cita.comision, 0);
+        
+        reportTotalVendido.textContent = `₡${totalVendido.toLocaleString('es-CR')}`;
+        reportTotalComisiones.textContent = `₡${totalComisiones.toLocaleString('es-CR')}`;
+        
+        reportTableBody.innerHTML = '';
+        if (citasDoctor.length > 0) {
+            citasDoctor.forEach(cita => {
+                reportTableBody.innerHTML += `
+                    <tr class="bg-white border-b">
+                        <td class="px-6 py-4">${cita.fecha}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900">${cita.nombrePaciente}</td>
+                        <td class="px-6 py-4">${cita.servicio}</td>
+                        <td class="px-6 py-4 text-right">₡${cita.precio.toLocaleString('es-CR')}</td>
+                        <td class="px-6 py-4 text-right text-green-600 font-medium">₡${cita.comision.toLocaleString('es-CR')}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            reportTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-6">No hay citas completadas para este doctor.</td></tr>`;
+        }
+
+        reportResults.classList.remove('hidden');
+    });
+
+
+    // --- Inicialización ---
+    populateSelects();
+    renderCitasTable();
+    switchView('registrar'); // Vista inicial
+});
+</script>
+
+</body>
+</html>
