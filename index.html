@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Citas - Clínica Dental Integral</title>
+    <title>Gestión de Citas - Clínica Dental</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,9 +29,26 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-50">
+        <div class="loader"></div>
+        <p class="mt-4 text-gray-600">Cargando datos...</p>
+    </div>
 
     <div class="flex h-screen bg-gray-100">
         <!-- Sidebar de Navegación -->
@@ -65,10 +82,7 @@
                 <div class="bg-white p-8 rounded-lg shadow-md max-w-2xl">
                     <form id="form-registro">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Datos del Paciente -->
-                            <div class="md:col-span-2">
-                                <h3 class="text-lg font-semibold border-b pb-2 mb-4">Datos del Paciente</h3>
-                            </div>
+                            <div class="md:col-span-2"><h3 class="text-lg font-semibold border-b pb-2 mb-4">Datos del Paciente</h3></div>
                             <div>
                                 <label for="paciente-nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
                                 <input type="text" id="paciente-nombre" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
@@ -85,11 +99,7 @@
                                 <label for="cita-fecha" class="block text-sm font-medium text-gray-700">Fecha de la Cita</label>
                                 <input type="date" id="cita-fecha" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
                             </div>
-
-                            <!-- Detalles del Servicio -->
-                            <div class="md:col-span-2 mt-4">
-                                <h3 class="text-lg font-semibold border-b pb-2 mb-4">Detalles del Servicio</h3>
-                            </div>
+                            <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold border-b pb-2 mb-4">Detalles del Servicio</h3></div>
                             <div>
                                 <label for="servicio-select" class="block text-sm font-medium text-gray-700">Servicio</label>
                                 <select id="servicio-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
@@ -112,7 +122,7 @@
                             </div>
                         </div>
                         <div class="mt-8 text-right">
-                            <button type="submit" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors">Guardar Cita</button>
+                            <button type="submit" id="btn-guardar-cita" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors disabled:bg-gray-400">Guardar Cita</button>
                         </div>
                     </form>
                 </div>
@@ -123,25 +133,16 @@
                 <h2 class="text-3xl font-bold mb-6">Consulta de Citas</h2>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <div class="mb-4">
-                        <label for="search-input" class="sr-only">Buscar</label>
                         <input type="text" id="search-input" placeholder="Buscar por nombre de paciente..." class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3">Fecha</th>
-                                    <th scope="col" class="px-6 py-3">Paciente</th>
-                                    <th scope="col" class="px-6 py-3">Servicio</th>
-                                    <th scope="col" class="px-6 py-3">Doctor</th>
-                                    <th scope="col" class="px-6 py-3 text-right">Precio</th>
-                                    <th scope="col" class="px-6 py-3 text-center">Estado</th>
-                                    <th scope="col" class="px-6 py-3 text-center">Acciones</th>
+                                    <th scope="col" class="px-6 py-3">Fecha</th><th scope="col" class="px-6 py-3">Paciente</th><th scope="col" class="px-6 py-3">Servicio</th><th scope="col" class="px-6 py-3">Doctor</th><th scope="col" class="px-6 py-3 text-right">Precio</th><th scope="col" class="px-6 py-3 text-center">Estado</th><th scope="col" class="px-6 py-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="citas-table-body">
-                                <!-- Las filas se insertarán aquí dinámicamente -->
-                            </tbody>
+                            <tbody id="citas-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -157,39 +158,21 @@
                              <option value="">-- Todos los doctores --</option>
                         </select>
                     </div>
-                    
                     <div id="report-results" class="hidden">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div class="bg-gray-50 p-6 rounded-lg text-center">
-                                <h4 class="text-sm font-medium text-gray-500 uppercase">Total Vendido</h4>
-                                <p id="report-total-vendido" class="text-3xl font-bold text-gray-800 mt-1">₡0</p>
-                            </div>
-                             <div class="bg-green-50 p-6 rounded-lg text-center">
-                                <h4 class="text-sm font-medium text-green-600 uppercase">Total Comisiones</h4>
-                                <p id="report-total-comisiones" class="text-3xl font-bold text-green-800 mt-1">₡0</p>
-                            </div>
+                            <div class="bg-gray-50 p-6 rounded-lg text-center"><h4 class="text-sm font-medium text-gray-500 uppercase">Total Vendido</h4><p id="report-total-vendido" class="text-3xl font-bold text-gray-800 mt-1">₡0</p></div>
+                             <div class="bg-green-50 p-6 rounded-lg text-center"><h4 class="text-sm font-medium text-green-600 uppercase">Total Comisiones</h4><p id="report-total-comisiones" class="text-3xl font-bold text-green-800 mt-1">₡0</p></div>
                         </div>
                         <h3 class="text-xl font-bold mb-4">Detalle de Citas Completadas</h3>
                         <div class="overflow-x-auto border rounded-lg">
                             <table class="w-full text-sm text-left text-gray-500">
-                                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
-                                    <tr>
-                                        <th class="px-6 py-3">Fecha</th>
-                                        <th class="px-6 py-3">Paciente</th>
-                                        <th class="px-6 py-3">Servicio</th>
-                                        <th class="px-6 py-3 text-right">Precio</th>
-                                        <th class="px-6 py-3 text-right">Comisión</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="report-table-body">
-                                    <!-- Filas del reporte -->
-                                </tbody>
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-6 py-3">Fecha</th><th class="px-6 py-3">Paciente</th><th class="px-6 py-3">Servicio</th><th class="px-6 py-3 text-right">Precio</th><th class="px-6 py-3 text-right">Comisión</th></tr></thead>
+                                <tbody id="report-table-body"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -199,53 +182,20 @@
             <h2 class="text-2xl font-bold mb-6">Editar Cita</h2>
             <form id="form-edit">
                 <input type="hidden" id="edit-cita-id">
-                <!-- Contenido del formulario duplicado para la edición -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div>
-                        <label for="edit-paciente-nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
-                        <input type="text" id="edit-paciente-nombre" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label for="edit-paciente-cedula" class="block text-sm font-medium text-gray-700">Cédula</label>
-                        <input type="text" id="edit-paciente-cedula" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label for="edit-paciente-telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input type="tel" id="edit-paciente-telefono" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label for="edit-cita-fecha" class="block text-sm font-medium text-gray-700">Fecha de la Cita</label>
-                        <input type="date" id="edit-cita-fecha" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label for="edit-servicio-select" class="block text-sm font-medium text-gray-700">Servicio</oabel>
-                        <select id="edit-servicio-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select>
-                    </div>
-                    <div>
-                        <label for="edit-servicio-precio" class="block text-sm font-medium text-gray-700">Precio (₡)</label>
-                        <input type="text" id="edit-servicio-precio" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="edit-doctor-select" class="block text-sm font-medium text-gray-700">Doctor</label>
-                        <select id="edit-doctor-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select>
-                    </div>
-                     <div class="md:col-span-2">
-                        <label for="edit-cita-estado" class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select id="edit-cita-estado" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500">
-                            <option value="Agendada">Agendada</option>
-                            <option value="Completada">Completada</option>
-                            <option value="Cancelada">Cancelada</option>
-                            <option value="Facturada">Facturada</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="edit-cita-notas" class="block text-sm font-medium text-gray-700">Notas Adicionales</label>
-                        <textarea id="edit-cita-notas" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></textarea>
-                    </div>
+                     <div><label for="edit-paciente-nombre" class="block text-sm font-medium text-gray-700">Nombre Completo</label><input type="text" id="edit-paciente-nombre" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></div>
+                    <div><label for="edit-paciente-cedula" class="block text-sm font-medium text-gray-700">Cédula</label><input type="text" id="edit-paciente-cedula" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></div>
+                    <div><label for="edit-paciente-telefono" class="block text-sm font-medium text-gray-700">Teléfono</label><input type="tel" id="edit-paciente-telefono" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></div>
+                    <div><label for="edit-cita-fecha" class="block text-sm font-medium text-gray-700">Fecha de la Cita</label><input type="date" id="edit-cita-fecha" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></div>
+                    <div><label for="edit-servicio-select" class="block text-sm font-medium text-gray-700">Servicio</label><select id="edit-servicio-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select></div>
+                    <div><label for="edit-servicio-precio" class="block text-sm font-medium text-gray-700">Precio (₡)</label><input type="text" id="edit-servicio-precio" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm"></div>
+                    <div class="md:col-span-2"><label for="edit-doctor-select" class="block text-sm font-medium text-gray-700">Doctor</label><select id="edit-doctor-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></select></div>
+                     <div class="md:col-span-2"><label for="edit-cita-estado" class="block text-sm font-medium text-gray-700">Estado</label><select id="edit-cita-estado" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"><option value="Agendada">Agendada</option><option value="Completada">Completada</option><option value="Cancelada">Cancelada</option><option value="Facturada">Facturada</option></select></div>
+                    <div class="md:col-span-2"><label for="edit-cita-notas" class="block text-sm font-medium text-gray-700">Notas Adicionales</label><textarea id="edit-cita-notas" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"></textarea></div>
                 </div>
                 <div class="mt-8 flex justify-end gap-4">
                     <button type="button" id="cancel-edit" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
-                    <button type="submit" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors">Guardar Cambios</button>
+                    <button type="submit" id="btn-guardar-cambios" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors disabled:bg-gray-400">Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -259,54 +209,32 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ===================================================================================
-    // MOCK DATA: Simulación de la base de datos de Google Sheets.
-    // En una aplicación real, estos datos vendrían de llamadas a la API (fetch).
+    // ESTADO GLOBAL DE LA APLICACIÓN
+    // Estas variables se llenarán con los datos reales de la API.
     // ===================================================================================
-    const servicios = [
-        { nombre: 'Limpieza Dental', precio: 25000 },
-        { nombre: 'Blanqueamiento Dental', precio: 150000 },
-        { nombre: 'Calza (Resina)', precio: 40000 },
-        { nombre: 'Extracción Simple', precio: 35000 },
-        { nombre: 'Tratamiento de Nervio', precio: 200000 },
-        { nombre: 'Corona de Porcelana', precio: 250000 }
-    ];
-
-    const doctores = [
-        { nombre: 'Dr. Carlos Rojas', especialidad: 'General', comision: 0.20 },
-        { nombre: 'Dra. Ana Fuentes', especialidad: 'Ortodoncia', comision: 0.25 },
-        { nombre: 'Dr. Luis Jiménez', especialidad: 'Endodoncia', comision: 0.30 }
-    ];
-
-    let citas = [
-        { id: 'cita-1689798451', fecha: '2025-08-15', nombrePaciente: 'Elena Vargas', cedulaPaciente: '1-1234-5678', telefonoPaciente: '8888-7777', servicio: 'Limpieza Dental', precio: 25000, doctor: 'Dr. Carlos Rojas', comision: 5000, estado: 'Completada', notas: 'Paciente refiere sensibilidad.' },
-        { id: 'cita-1689798452', fecha: '2025-08-16', nombrePaciente: 'Marco Solís', cedulaPaciente: '2-0987-6543', telefonoPaciente: '8765-4321', servicio: 'Blanqueamiento Dental', precio: 150000, doctor: 'Dra. Ana Fuentes', comision: 37500, estado: 'Facturada', notas: '' },
-        { id: 'cita-1689798453', fecha: '2025-08-20', nombrePaciente: 'Sofía Castro', cedulaPaciente: '9-0123-4567', telefonoPaciente: '8901-2345', servicio: 'Calza (Resina)', precio: 40000, doctor: 'Dr. Carlos Rojas', comision: 8000, estado: 'Agendada', notas: 'Muela inferior derecha.' }
-    ];
+    let servicios = [];
+    let doctores = [];
+    let citas = [];
 
     // ===================================================================================
     // REFERENCIAS AL DOM
     // ===================================================================================
-    const navLinks = {
-        registrar: document.getElementById('nav-registrar'),
-        consultar: document.getElementById('nav-consultar'),
-        reportes: document.getElementById('nav-reportes'),
-    };
-    const views = {
-        registrar: document.getElementById('view-registrar'),
-        consultar: document.getElementById('view-consultar'),
-        reportes: document.getElementById('view-reportes'),
-    };
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const navLinks = { registrar: document.getElementById('nav-registrar'), consultar: document.getElementById('nav-consultar'), reportes: document.getElementById('nav-reportes') };
+    const views = { registrar: document.getElementById('view-registrar'), consultar: document.getElementById('view-consultar'), reportes: document.getElementById('view-reportes') };
     const formRegistro = document.getElementById('form-registro');
     const servicioSelect = document.getElementById('servicio-select');
     const servicioPrecioInput = document.getElementById('servicio-precio');
     const doctorSelect = document.getElementById('doctor-select');
     const citasTableBody = document.getElementById('citas-table-body');
     const searchInput = document.getElementById('search-input');
-    
+    const btnGuardarCita = document.getElementById('btn-guardar-cita');
+
     // Elementos del Modal
     const editModal = document.getElementById('edit-modal');
     const formEdit = document.getElementById('form-edit');
     const cancelEditBtn = document.getElementById('cancel-edit');
+    const btnGuardarCambios = document.getElementById('btn-guardar-cambios');
     const editCitaId = document.getElementById('edit-cita-id');
     const editServicioSelect = document.getElementById('edit-servicio-select');
     const editDoctorSelect = document.getElementById('edit-doctor-select');
@@ -323,6 +251,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // LÓGICA DE LA APLICACIÓN
     // ===================================================================================
 
+    // --- Lógica de Carga de Datos ---
+    async function cargarDatosIniciales() {
+        try {
+            const response = await fetch('/.netlify/functions/get-data');
+            if (!response.ok) {
+                throw new Error(`Error de red: ${response.statusText}`);
+            }
+            const data = await response.json();
+            
+            servicios = data.servicios.map(s => ({ ...s, precio: parseFloat(s.precio) }));
+            doctores = data.doctores.map(d => ({ ...d, comision: parseFloat(d.comision) }));
+            citas = data.citas.map(c => ({ ...c, precio: parseFloat(c.precio), comision: parseFloat(c.comision) }));
+
+            initializeApplication();
+        } catch (error) {
+            console.error('Error fatal al cargar datos:', error);
+            showNotification('No se pudieron cargar los datos. Intente recargar la página.', true);
+        } finally {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+
     // --- Lógica de Navegación ---
     function switchView(viewName) {
         Object.values(views).forEach(view => view.classList.add('hidden'));
@@ -330,13 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
         views[viewName].classList.remove('hidden');
         navLinks[viewName].classList.add('active');
     }
-
-    Object.entries(navLinks).forEach(([name, link]) => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchView(name);
-        });
-    });
 
     // --- Lógica de Notificaciones ---
     function showNotification(message, isError = false) {
@@ -354,13 +297,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de Formularios y Datos ---
     function populateSelects() {
-        // Llenar selects de servicios
+        servicioSelect.innerHTML = '<option value="">-- Seleccione un servicio --</option>';
+        editServicioSelect.innerHTML = '<option value="">-- Seleccione un servicio --</option>';
         servicios.forEach(s => {
             servicioSelect.innerHTML += `<option value="${s.nombre}">${s.nombre}</option>`;
             editServicioSelect.innerHTML += `<option value="${s.nombre}">${s.nombre}</option>`;
         });
 
-        // Llenar selects de doctores
+        doctorSelect.innerHTML = '<option value="">-- Seleccione un doctor --</option>';
+        editDoctorSelect.innerHTML = '<option value="">-- Seleccione un doctor --</option>';
+        reporteDoctorSelect.innerHTML = '<option value="">-- Todos los doctores --</option>';
         doctores.forEach(d => {
             doctorSelect.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
             editDoctorSelect.innerHTML += `<option value="${d.nombre}">${d.nombre}</option>`;
@@ -379,40 +325,33 @@ document.addEventListener('DOMContentLoaded', () => {
             citasTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-6">No se encontraron citas.</td></tr>`;
             return;
         }
-        citasToShow.forEach(cita => {
-            const estadoClass = {
-                'Agendada': 'bg-blue-100 text-blue-800',
-                'Completada': 'bg-yellow-100 text-yellow-800',
-                'Cancelada': 'bg-red-100 text-red-800',
-                'Facturada': 'bg-green-100 text-green-800'
-            }[cita.estado] || 'bg-gray-100 text-gray-800';
-
-            const row = `
-                <tr class="bg-white border-b hover:bg-gray-50">
+        citasToShow.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(cita => {
+            const estadoClass = { 'Agendada': 'bg-blue-100 text-blue-800', 'Completada': 'bg-yellow-100 text-yellow-800', 'Cancelada': 'bg-red-100 text-red-800', 'Facturada': 'bg-green-100 text-green-800' }[cita.estado] || 'bg-gray-100 text-gray-800';
+            const row = `<tr class="bg-white border-b hover:bg-gray-50">
                     <td class="px-6 py-4">${cita.fecha}</td>
                     <td class="px-6 py-4 font-medium text-gray-900">${cita.nombrePaciente}</td>
                     <td class="px-6 py-4">${cita.servicio}</td>
                     <td class="px-6 py-4">${cita.doctor}</td>
-                    <td class="px-6 py-4 text-right">₡${cita.precio.toLocaleString('es-CR')}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-2 py-1 text-xs font-medium rounded-full ${estadoClass}">${cita.estado}</span>
-                    </td>
+                    <td class="px-6 py-4 text-right">₡${parseFloat(cita.precio).toLocaleString('es-CR')}</td>
+                    <td class="px-6 py-4 text-center"><span class="px-2 py-1 text-xs font-medium rounded-full ${estadoClass}">${cita.estado}</span></td>
                     <td class="px-6 py-4 text-center">
                         <button data-id="${cita.id}" class="edit-btn font-medium text-cyan-600 hover:underline mr-3">Editar</button>
                         ${cita.estado === 'Completada' ? `<button data-id="${cita.id}" class="invoice-btn font-medium text-green-600 hover:underline">Facturar</button>` : ''}
-                    </td>
-                </tr>
-            `;
+                    </td></tr>`;
             citasTableBody.innerHTML += row;
         });
     }
 
     // --- Lógica de Eventos ---
+    Object.entries(navLinks).forEach(([name, link]) => link.addEventListener('click', (e) => { e.preventDefault(); switchView(name); }));
     servicioSelect.addEventListener('change', () => updatePrice(servicioSelect, servicioPrecioInput));
     editServicioSelect.addEventListener('change', () => updatePrice(editServicioSelect, editServicioPrecio));
 
-    formRegistro.addEventListener('submit', (e) => {
+    formRegistro.addEventListener('submit', async (e) => {
         e.preventDefault();
+        btnGuardarCita.disabled = true;
+        btnGuardarCita.textContent = 'Guardando...';
+
         const servicioNombre = servicioSelect.value;
         const doctorNombre = doctorSelect.value;
         const servicio = servicios.find(s => s.nombre === servicioNombre);
@@ -420,6 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!servicio || !doctor) {
             showNotification('Servicio o doctor no válido.', true);
+            btnGuardarCita.disabled = false;
+            btnGuardarCita.textContent = 'Guardar Cita';
             return;
         }
 
@@ -437,15 +378,21 @@ document.addEventListener('DOMContentLoaded', () => {
             notas: document.getElementById('cita-notas').value
         };
         
-        // En una aplicación real, aquí harías un fetch a tu API para guardar en Google Sheets.
-        // await fetch('/.netlify/functions/add-cita', { method: 'POST', body: JSON.stringify(newCita) });
-        citas.push(newCita);
-        
-        renderCitasTable();
-        formRegistro.reset();
-        servicioPrecioInput.value = '';
-        showNotification('Cita registrada con éxito.');
-        switchView('consultar');
+        try {
+            const response = await fetch('/.netlify/functions/add-cita', { method: 'POST', body: JSON.stringify(newCita) });
+            if (!response.ok) throw new Error('Error al guardar en el servidor.');
+            citas.push(newCita);
+            renderCitasTable();
+            formRegistro.reset();
+            servicioPrecioInput.value = '';
+            showNotification('Cita registrada con éxito.');
+            switchView('consultar');
+        } catch (error) {
+            showNotification('No se pudo guardar la cita.', true);
+        } finally {
+            btnGuardarCita.disabled = false;
+            btnGuardarCita.textContent = 'Guardar Cita';
+        }
     });
 
     searchInput.addEventListener('input', (e) => {
@@ -468,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('edit-paciente-telefono').value = cita.telefonoPaciente;
                 document.getElementById('edit-cita-fecha').value = cita.fecha;
                 document.getElementById('edit-servicio-select').value = cita.servicio;
-                document.getElementById('edit-servicio-precio').value = cita.precio.toLocaleString('es-CR');
+                document.getElementById('edit-servicio-precio').value = parseFloat(cita.precio).toLocaleString('es-CR');
                 document.getElementById('edit-doctor-select').value = cita.doctor;
                 document.getElementById('edit-cita-estado').value = cita.estado;
                 document.getElementById('edit-cita-notas').value = cita.notas;
@@ -477,27 +424,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (target.classList.contains('invoice-btn')) {
-            const citaIndex = citas.findIndex(c => c.id === citaId);
-            if (citaIndex !== -1) {
-                citas[citaIndex].estado = 'Facturada';
-                // En una aplicación real, aquí harías un fetch para actualizar el estado.
-                // await fetch(`/.netlify/functions/update-cita-status/${citaId}`, { method: 'PUT', body: JSON.stringify({ estado: 'Facturada' }) });
-                renderCitasTable();
-                showNotification('Cita marcada como Facturada.');
-            }
+             const citaToUpdate = citas.find(c => c.id === citaId);
+             if(citaToUpdate) {
+                citaToUpdate.estado = 'Facturada';
+                formEdit.dispatchEvent(new CustomEvent('submit', { detail: { isInvoiceAction: true, cita: citaToUpdate } }));
+             }
         }
     });
 
-    cancelEditBtn.addEventListener('click', () => {
-        editModal.classList.add('hidden');
-    });
+    cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
 
-    formEdit.addEventListener('submit', (e) => {
+    formEdit.addEventListener('submit', async (e) => {
         e.preventDefault();
+        btnGuardarCambios.disabled = true;
+        btnGuardarCambios.textContent = 'Guardando...';
+
         const citaId = editCitaId.value;
         const citaIndex = citas.findIndex(c => c.id === citaId);
         if (citaIndex === -1) {
             showNotification('Error: no se encontró la cita.', true);
+            btnGuardarCambios.disabled = false;
+            btnGuardarCambios.textContent = 'Guardar Cambios';
             return;
         }
 
@@ -520,13 +467,19 @@ document.addEventListener('DOMContentLoaded', () => {
             notas: document.getElementById('edit-cita-notas').value,
         };
 
-        // En una aplicación real, aquí harías un fetch para actualizar la cita completa.
-        // await fetch(`/.netlify/functions/update-cita/${citaId}`, { method: 'PUT', body: JSON.stringify(updatedCita) });
-        citas[citaIndex] = updatedCita;
-
-        renderCitasTable();
-        editModal.classList.add('hidden');
-        showNotification('Cita actualizada con éxito.');
+        try {
+            const response = await fetch('/.netlify/functions/update-cita', { method: 'PUT', body: JSON.stringify(updatedCita) });
+            if (!response.ok) throw new Error('Error al actualizar en el servidor.');
+            citas[citaIndex] = updatedCita;
+            renderCitasTable();
+            editModal.classList.add('hidden');
+            showNotification('Cita actualizada con éxito.');
+        } catch(error) {
+            showNotification('No se pudo actualizar la cita.', true);
+        } finally {
+            btnGuardarCambios.disabled = false;
+            btnGuardarCambios.textContent = 'Guardar Cambios';
+        }
     });
 
     // --- Lógica de Reportes ---
@@ -536,11 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
             reportResults.classList.add('hidden');
             return;
         }
-
-        const citasDoctor = citas.filter(c => c.doctor === selectedDoctor && c.estado === 'Completada' || c.estado === 'Facturada');
-        
-        const totalVendido = citasDoctor.reduce((sum, cita) => sum + cita.precio, 0);
-        const totalComisiones = citasDoctor.reduce((sum, cita) => sum + cita.comision, 0);
+        const citasDoctor = citas.filter(c => c.doctor === selectedDoctor && (c.estado === 'Completada' || c.estado === 'Facturada'));
+        const totalVendido = citasDoctor.reduce((sum, cita) => sum + parseFloat(cita.precio), 0);
+        const totalComisiones = citasDoctor.reduce((sum, cita) => sum + parseFloat(cita.comision), 0);
         
         reportTotalVendido.textContent = `₡${totalVendido.toLocaleString('es-CR')}`;
         reportTotalComisiones.textContent = `₡${totalComisiones.toLocaleString('es-CR')}`;
@@ -548,28 +499,28 @@ document.addEventListener('DOMContentLoaded', () => {
         reportTableBody.innerHTML = '';
         if (citasDoctor.length > 0) {
             citasDoctor.forEach(cita => {
-                reportTableBody.innerHTML += `
-                    <tr class="bg-white border-b">
+                reportTableBody.innerHTML += `<tr class="bg-white border-b">
                         <td class="px-6 py-4">${cita.fecha}</td>
                         <td class="px-6 py-4 font-medium text-gray-900">${cita.nombrePaciente}</td>
                         <td class="px-6 py-4">${cita.servicio}</td>
-                        <td class="px-6 py-4 text-right">₡${cita.precio.toLocaleString('es-CR')}</td>
-                        <td class="px-6 py-4 text-right text-green-600 font-medium">₡${cita.comision.toLocaleString('es-CR')}</td>
-                    </tr>
-                `;
+                        <td class="px-6 py-4 text-right">₡${parseFloat(cita.precio).toLocaleString('es-CR')}</td>
+                        <td class="px-6 py-4 text-right text-green-600 font-medium">₡${parseFloat(cita.comision).toLocaleString('es-CR')}</td>
+                    </tr>`;
             });
         } else {
             reportTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-6">No hay citas completadas para este doctor.</td></tr>`;
         }
-
         reportResults.classList.remove('hidden');
     });
 
+    // --- Inicialización de la Aplicación ---
+    function initializeApplication() {
+        populateSelects();
+        renderCitasTable();
+        switchView('registrar');
+    }
 
-    // --- Inicialización ---
-    populateSelects();
-    renderCitasTable();
-    switchView('registrar'); // Vista inicial
+    cargarDatosIniciales();
 });
 </script>
 
