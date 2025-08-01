@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const servicio = servicios.find(s => s.nombre === servicioNombre);
         const doctor = doctores.find(d => d.nombre === doctorNombre);
 
-        const comisionCalculada = servicio.precio * (doctor.comision / 100);
+        const comisionCalculada = parseFloat(servicio.precio) * (parseFloat(doctor.comision) / 100);
 
         const newCita = { id: `cita-${Date.now()}`, fecha: document.getElementById('cita-fecha').value, nombrePaciente: document.getElementById('paciente-nombre').value, cedulaPaciente: document.getElementById('paciente-cedula').value, telefonoPaciente: document.getElementById('paciente-telefono').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: comisionCalculada, estado: 'Agendada', notas: document.getElementById('cita-notas').value };
         try {
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const servicio = servicios.find(s => s.nombre === servicioNombre);
         const doctor = doctores.find(d => d.nombre === doctorNombre);
         
-        const comisionCalculada = servicio.precio * (doctor.comision / 100);
+        const comisionCalculada = parseFloat(servicio.precio) * (parseFloat(doctor.comision) / 100);
 
         const updatedCita = { ...citas[citaIndex], nombrePaciente: document.getElementById('edit-paciente-nombre').value, cedulaPaciente: document.getElementById('edit-paciente-cedula').value, telefonoPaciente: document.getElementById('edit-paciente-telefono').value, fecha: document.getElementById('edit-cita-fecha').value, servicio: servicio.nombre, precio: servicio.precio, doctor: doctor.nombre, comision: comisionCalculada, estado: document.getElementById('edit-cita-estado').value, notas: document.getElementById('edit-cita-notas').value };
         const success = await updateCitaInBackend(updatedCita);
