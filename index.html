@@ -320,13 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let citas = [];
     let commissionChartInstance = null;
     let currentReportDate = new Date();
-    const consejos = [
-        "Verifica dos veces la información de contacto para asegurar recordatorios efectivos.",
-        "Usa la sección de notas para registrar alergias o condiciones importantes del paciente.",
-        "Un paciente feliz es la mejor publicidad. ¡Ofrece siempre una experiencia excepcional!",
-        "Mantén el calendario actualizado para evitar sobreagendamientos y optimizar el tiempo de los doctores.",
-        "Revisa el dashboard al final del día para tener una visión clara del rendimiento de la clínica."
-    ];
     
     // ===================================================================================
     // REFERENCIAS AL DOM
@@ -347,9 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const citasCardsContainer = document.getElementById('citas-cards-container');
     const searchInput = document.getElementById('search-input');
     const btnGuardarCita = document.getElementById('btn-guardar-cita');
-    const brandingPanel = document.getElementById('branding-panel');
-    const consejoTexto = document.getElementById('consejo-texto');
-    const closeConsejoBtn = document.getElementById('close-consejo-btn');
     
     // Elementos del Modal
     const editModal = document.getElementById('edit-modal');
@@ -429,18 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
             notif.classList.add('opacity-0', 'translate-y-4');
             setTimeout(() => notif.remove(), 500);
         }, 4000);
-    }
-
-    function setupBrandingPanel() {
-        if (sessionStorage.getItem('brandingPanelClosed')) {
-            brandingPanel.classList.add('hidden');
-        } else {
-            consejoTexto.textContent = consejos[Math.floor(Math.random() * consejos.length)];
-        }
-        closeConsejoBtn.addEventListener('click', () => {
-            brandingPanel.style.display = 'none';
-            sessionStorage.setItem('brandingPanelClosed', 'true');
-        });
     }
 
     // --- Lógica de Formularios y Datos ---
@@ -681,8 +659,8 @@ document.addEventListener('DOMContentLoaded', () => {
                    citaDate.getMonth() === month;
         });
         
-        const totalVendido = filteredCitas.reduce((sum, cita) => sum + cita.precio, 0);
-        const totalComisiones = filteredCitas.reduce((sum, cita) => sum + cita.comision, 0);
+        const totalVendido = filteredCitas.reduce((sum, cita) => sum + parseFloat(cita.precio), 0);
+        const totalComisiones = filteredCitas.reduce((sum, cita) => sum + parseFloat(cita.comision), 0);
         const totalCitasCompletadas = filteredCitas.length;
         const avgComision = totalCitasCompletadas > 0 ? totalComisiones / totalCitasCompletadas : 0;
         const formatCurrency = (value) => `₡${value.toLocaleString('es-CR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -702,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         const comisionesPorServicio = filteredCitas.reduce((acc, cita) => {
-            acc[cita.servicio] = (acc[cita.servicio] || 0) + cita.comision;
+            acc[cita.servicio] = (acc[cita.servicio] || 0) + parseFloat(cita.comision);
             return acc;
         }, {});
         const chartLabels = Object.keys(comisionesPorServicio);
@@ -722,7 +700,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeApplication() {
         populateSelects();
         renderCitas();
-        setupBrandingPanel();
         reporteDoctorSelect.addEventListener('change', () => {
             currentReportDate = new Date(); // Reset date when doctor changes
             displayReport();
