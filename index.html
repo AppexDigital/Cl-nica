@@ -380,9 +380,9 @@ document.addEventListener('DOMContentLoaded', () => {
                  throw new Error("La respuesta del servidor no es un objeto JSON válido.");
             }
             
-            servicios = data.servicios.map(s => ({ ...s, precio: parseFloat(s.precio) })) || [];
-            doctores = data.doctores.map(d => ({ ...d, comision: parseFloat(d.comision) })) || [];
-            citas = data.citas.map(c => ({...c, precio: parseFloat(c.precio), comision: parseFloat(c.comision) })) || [];
+            servicios = (data.servicios || []).map(s => ({ ...s, precio: parseFloat(s.precio) }));
+            doctores = (data.doctores || []).map(d => ({ ...d, comision: parseFloat(d.comision) }));
+            citas = (data.citas || []).map(c => ({...c, precio: parseFloat(c.precio), comision: parseFloat(c.comision) }));
 
             initializeApplication();
         } catch (error) {
